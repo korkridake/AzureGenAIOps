@@ -19,7 +19,7 @@ REPORTS_DIR = PROJECT_ROOT / "reports"
 
 class AzureConfig:
     """Azure service configuration."""
-    
+
     def __init__(self):
         self.subscription_id = os.getenv("AZURE_SUBSCRIPTION_ID")
         self.resource_group = os.getenv("AZURE_RESOURCE_GROUP")
@@ -29,7 +29,7 @@ class AzureConfig:
 
 class OpenAIConfig:
     """Azure OpenAI configuration."""
-    
+
     def __init__(self):
         self.endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
         self.api_key = os.getenv("AZURE_OPENAI_API_KEY")
@@ -39,7 +39,7 @@ class OpenAIConfig:
 
 class MLConfig:
     """Machine Learning configuration."""
-    
+
     def __init__(self):
         self.workspace_name = os.getenv("AZURE_ML_WORKSPACE_NAME")
         self.compute_name = os.getenv("AZURE_ML_COMPUTE_NAME")
@@ -51,7 +51,7 @@ class MLConfig:
 
 class StorageConfig:
     """Azure Storage configuration."""
-    
+
     def __init__(self):
         self.account_name = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
         self.container_name = os.getenv("AZURE_STORAGE_CONTAINER_NAME", "genai-data")
@@ -59,7 +59,7 @@ class StorageConfig:
 
 class Config:
     """Main configuration class."""
-    
+
     def __init__(self):
         self.azure = AzureConfig()
         self.openai = OpenAIConfig()
@@ -85,10 +85,10 @@ def validate_config() -> bool:
         "AZURE_OPENAI_ENDPOINT",
         "AZURE_OPENAI_API_KEY",
     ]
-    
+
     missing_vars = [var for var in required_vars if not os.getenv(var)]
-    
+
     if missing_vars:
         raise ValueError(f"Missing required environment variables: {missing_vars}")
-    
+
     return True

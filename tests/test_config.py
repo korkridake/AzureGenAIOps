@@ -17,7 +17,7 @@ def test_config_structure():
 def test_azure_config(mock_env_vars):
     """Test Azure configuration."""
     from src.config import AzureConfig
-    
+
     azure_config = AzureConfig()
     assert azure_config.subscription_id == "test-subscription-id"
     assert azure_config.resource_group == "test-resource-group"
@@ -27,7 +27,7 @@ def test_azure_config(mock_env_vars):
 def test_openai_config(mock_env_vars):
     """Test OpenAI configuration."""
     from src.config import OpenAIConfig
-    
+
     openai_config = OpenAIConfig()
     assert openai_config.endpoint == "https://test-openai.openai.azure.com/"
     assert openai_config.api_key == "test-api-key"
@@ -43,6 +43,6 @@ def test_validate_config_failure(monkeypatch):
     """Test config validation with missing vars."""
     # Remove required environment variable
     monkeypatch.delenv("AZURE_SUBSCRIPTION_ID", raising=False)
-    
+
     with pytest.raises(ValueError, match="Missing required environment variables"):
         validate_config()

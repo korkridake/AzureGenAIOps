@@ -18,8 +18,8 @@ def mock_env_vars(monkeypatch):
         "AZURE_ML_WORKSPACE_NAME": "test-workspace",
         "AZURE_STORAGE_ACCOUNT_NAME": "teststorage",
     }
-    
+
     for key, value in test_vars.items():
         monkeypatch.setenv(key, value)
-    
+
     return test_vars

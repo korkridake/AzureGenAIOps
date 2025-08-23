@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Azure GenAI Ops API",
     description="API for Generative AI Operations using Azure services",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 # Initialize model
@@ -60,7 +60,7 @@ async def generate_text(input_data: TextInput):
         result = model.predict(
             input_data.text,
             max_tokens=input_data.max_tokens,
-            temperature=input_data.temperature
+            temperature=input_data.temperature,
         )
         return TextOutput(result=result)
     except Exception as e:
@@ -75,7 +75,7 @@ async def batch_generate_text(input_data: BatchTextInput):
         results = model.batch_predict(
             input_data.texts,
             max_tokens=input_data.max_tokens,
-            temperature=input_data.temperature
+            temperature=input_data.temperature,
         )
         return BatchTextOutput(results=results)
     except Exception as e:
@@ -85,4 +85,5 @@ async def batch_generate_text(input_data: BatchTextInput):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
