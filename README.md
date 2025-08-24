@@ -1,37 +1,53 @@
-# AzureGenAIOps
+# AzureGenAIOps - Comprehensive LLM Operations Platform
 
-A comprehensive GenAIOps pipeline for Generative AI projects using Azure services and GitHub Actions. This project follows the cookiecutter-data-science template structure and implements best practices for MLOps with Generative AI models.
+A comprehensive GenAIOps (Generative AI Operations) platform built on Azure AI Foundry, providing end-to-end LLM lifecycle management with industry best practices.
 
 ## 🚀 Features
 
-- **Azure Integration**: Seamless integration with Azure OpenAI, Azure Machine Learning, Azure Storage, and Azure Key Vault
-- **CI/CD Pipeline**: Automated testing, building, and deployment using GitHub Actions
-- **Data Processing**: Robust data preprocessing and management pipelines
-- **Model Training**: Automated model training and evaluation workflows
-- **Containerization**: Docker support for consistent deployments
-- **Monitoring**: Built-in logging and monitoring capabilities
-- **Security**: Secure credential management with Azure Key Vault
+### Core LLM Operations
+- **🚀 LLM Training**: Fine-tuning and custom model training with Azure OpenAI
+- **🧱 LLM Application Development**: Build production-ready AI applications  
+- **🩸 LLM RAG**: Retrieval-Augmented Generation with Azure AI Search
+- **🟩 LLM Inference**: High-performance model serving and completions
+- **🚧 LLM Serving**: Scalable model deployment and endpoint management
+- **📤 LLM Data Extraction**: Document processing with Azure Document Intelligence
+- **🌠 LLM Data Generation**: Synthetic data creation for training and testing
+- **💎 LLM Agents**: AI agent frameworks and multi-step workflows
+- **⚖️ LLM Evaluation**: Comprehensive model testing and quality assessment
+- **🔍 LLM Monitoring**: Real-time observability and performance tracking
+- **📅 LLM Prompts**: Advanced prompt engineering and management
+- **📝 LLM Structured Outputs**: JSON, XML, and schema-based generation
+- **🛑 LLM Safety and Security**: Content filtering and jailbreak protection
+- **💠 LLM Embedding Models**: Vector search and semantic similarity
+
+### Azure AI Foundry Integration
+- Seamless integration with Azure AI Foundry projects
+- Native support for Azure OpenAI Service
+- Azure AI Search for vector and hybrid search
+- Azure Document Intelligence for data extraction
+- Azure Monitor for comprehensive observability
+- Azure Key Vault for secure credential management
 
 ## 🏗️ Architecture
 
 ```
-├── data/
-│   ├── external/        # Data from third party sources
-│   ├── interim/         # Intermediate data that has been transformed
-│   ├── processed/       # The final, canonical data sets for modeling
-│   └── raw/            # The original, immutable data dump
-├── models/             # Trained and serialized models, model predictions
-├── notebooks/          # Jupyter notebooks for exploration and analysis
-├── references/         # Data dictionaries, manuals, and explanatory materials
-├── reports/            # Generated analysis as HTML, PDF, LaTeX, etc.
-├── src/                # Source code for use in this project
-│   ├── data/           # Scripts to download or generate data
-│   ├── features/       # Scripts to turn raw data into features for modeling
-│   ├── models/         # Scripts to train models and make predictions
-│   └── visualization/  # Scripts to create exploratory and results visualizations
-├── tests/              # Unit tests
-├── .github/workflows/  # GitHub Actions CI/CD pipelines
-└── scripts/            # Deployment and utility scripts
+src/
+├── common/                # Azure AI Foundry client and shared utilities
+├── llm_training/          # 🚀 Model training and fine-tuning
+├── app_development/       # 🧱 Application development frameworks
+├── rag/                   # 🩸 Retrieval-Augmented Generation
+├── inference/             # 🟩 Model inference and completions
+├── serving/               # 🚧 Model serving and deployment
+├── data_extraction/       # 📤 Document processing and data extraction
+├── data_generation/       # 🌠 Synthetic data generation
+├── agents/                # 💎 AI agents and workflows
+├── evaluation/            # ⚖️ Model evaluation and testing
+├── monitoring/            # 🔍 Observability and monitoring
+├── prompts/               # 📅 Prompt engineering and management
+├── structured_outputs/    # 📝 Structured output generation
+├── safety_security/       # 🛑 Safety filtering and security
+├── embeddings/            # 💠 Embedding generation and vector ops
+└── app.py                 # FastAPI application with all endpoints
 ```
 
 ## 🛠️ Setup
@@ -40,8 +56,9 @@ A comprehensive GenAIOps pipeline for Generative AI projects using Azure service
 
 - Python 3.9+
 - Azure CLI
+- Azure AI Foundry project
+- Azure OpenAI Service
 - Docker (optional)
-- Git
 
 ### Installation
 
@@ -66,12 +83,12 @@ A comprehensive GenAIOps pipeline for Generative AI projects using Azure service
 4. **Set up environment variables:**
    ```bash
    cp .env.example .env
-   # Edit .env with your Azure configuration
+   # Edit .env with your Azure AI Foundry configuration
    ```
 
-### Azure Setup
+### Azure AI Foundry Setup
 
-1. **Create Azure Resources:**
+1. **Create Azure AI Foundry Project:**
    ```bash
    # Login to Azure
    az login
@@ -79,140 +96,219 @@ A comprehensive GenAIOps pipeline for Generative AI projects using Azure service
    # Create resource group
    az group create --name your-resource-group --location eastus
    
-   # Create Azure OpenAI service
+   # Create AI Foundry project (via Azure Portal or CLI)
    az cognitiveservices account create \
-     --name your-openai-service \
+     --name your-ai-project \
      --resource-group your-resource-group \
-     --kind OpenAI \
+     --kind AIServices \
      --sku S0 \
      --location eastus
-   
-   # Create Azure ML workspace
-   az ml workspace create \
-     --name your-ml-workspace \
-     --resource-group your-resource-group
    ```
 
-2. **Configure GitHub Secrets:**
-   - `AZURE_CREDENTIALS`: Service principal credentials
-   - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID
-   - `AZURE_RESOURCE_GROUP`: Your resource group name
-   - `AZURE_OPENAI_ENDPOINT`: Your OpenAI service endpoint
-   - `AZURE_OPENAI_API_KEY`: Your OpenAI API key
-   - Additional secrets as needed
+2. **Configure Services:**
+   - Azure OpenAI Service with GPT-4 and embedding models
+   - Azure AI Search for RAG capabilities
+   - Azure Document Intelligence for data extraction
+   - Azure Storage for data and model artifacts
+   - Azure Monitor for observability
+
+3. **Set Environment Variables:**
+   ```bash
+   export AZURE_AI_PROJECT_NAME="your-ai-foundry-project"
+   export AZURE_OPENAI_ENDPOINT="https://your-openai.openai.azure.com/"
+   export AZURE_OPENAI_API_KEY="your-api-key"
+   # ... other variables from .env.example
+   ```
 
 ## 🚀 Usage
 
-### Data Processing
+### Start the API Server
 
 ```bash
-# Process raw data
-make data
-
-# Or manually
-python -m src.data.make_dataset data/raw/input.csv data/processed/
-```
-
-### Model Training
-
-```bash
-# Train model
-make train
-
-# Or manually
-python -m src.models.train_model \
-  --train-data data/processed/train.csv \
-  --val-data data/processed/validation.csv \
-  --output-dir models/
-```
-
-### Running the API
-
-```bash
-# Start the FastAPI server
-make run
-
-# Or with uvicorn directly
+# Start the comprehensive LLM operations API
 uvicorn src.app:app --host 0.0.0.0 --port 8000
+
+# Or use the make command
+make run
 ```
 
-### Docker Deployment
+### API Endpoints
 
+#### 🟩 Inference & Completions
 ```bash
-# Build Docker image
-make docker-build
+# Chat completion
+curl -X POST "http://localhost:8000/chat/completions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "Explain machine learning"}
+    ],
+    "max_tokens": 1000,
+    "temperature": 0.7
+  }'
 
-# Run container
-make docker-run
+# Text completion
+curl -X POST "http://localhost:8000/completions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "The future of AI is",
+    "max_tokens": 500
+  }'
 ```
 
-## 🧪 Testing
+#### 🩸 RAG (Retrieval-Augmented Generation)
+```bash
+# RAG query with document retrieval
+curl -X POST "http://localhost:8000/rag/query" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What are the benefits of using Azure AI?",
+    "top_k": 5,
+    "score_threshold": 0.7
+  }'
+```
+
+#### 💠 Embeddings
+```bash
+# Generate embeddings
+curl -X POST "http://localhost:8000/embeddings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "texts": ["Hello world", "Azure AI is powerful"]
+  }'
+```
+
+#### 🛑 Safety & Security
+```bash
+# Content safety check
+curl -X POST "http://localhost:8000/safety/check" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "How to build a machine learning model?",
+    "check_type": "both"
+  }'
+```
+
+#### 🔍 Monitoring
+```bash
+# Get system metrics
+curl "http://localhost:8000/metrics"
+
+# Health check
+curl "http://localhost:8000/health"
+```
+
+### Python SDK Usage
+
+```python
+from src.common import AzureFoundryClient, LLMConfig
+from src.inference import InferenceEngine
+from src.rag import RAGPipeline
+from src.embeddings import EmbeddingGenerator
+
+# Initialize components
+config = LLMConfig()
+foundry_client = AzureFoundryClient()
+inference_engine = InferenceEngine(config)
+rag_pipeline = RAGPipeline(config)
+
+# Generate chat completion
+response = inference_engine.chat_completion([
+    {"role": "user", "content": "Explain quantum computing"}
+])
+
+# Perform RAG query
+rag_response = rag_pipeline.query(
+    question="What is Azure AI Foundry?",
+    top_k=3
+)
+
+# Generate embeddings
+embeddings = EmbeddingGenerator(config)
+vectors = embeddings.generate_embeddings_batch([
+    "Text to embed",
+    "Another text sample"
+])
+```
+
+## 🧪 Testing & Development
 
 ```bash
-# Run all tests
+# Run comprehensive test suite
 make test
 
-# Run tests with coverage
+# Run with coverage
 make test-coverage
 
-# Lint code
+# Lint and format code
 make lint
-
-# Format code
 make format
+
+# Security scanning
+make security-scan
+
+# Type checking
+make type-check
 ```
 
 ## 📊 CI/CD Pipeline
 
-The project includes comprehensive GitHub Actions workflows:
+The project includes GitHub Actions workflows for:
 
 ### Main CI/CD Pipeline (`.github/workflows/ci-cd.yml`)
-- **Testing**: Runs unit tests, linting, and security scans
-- **Building**: Creates Docker images
-- **Deployment**: Deploys to Azure services
+- **Testing**: Unit tests, integration tests, safety checks
+- **Building**: Docker images with multi-stage builds
+- **Security**: Bandit security scanning, dependency checks
+- **Deployment**: Azure Container Instances, Azure Container Apps
+- **Quality**: Code coverage, type checking, linting
 
-### Model Training Pipeline (`.github/workflows/model-training.yml`)
-- **Scheduled Training**: Automated daily model training
-- **Data Processing**: Automated data preprocessing
-- **Model Evaluation**: Performance validation
-- **Deployment**: Conditional model deployment based on performance
+### LLM Operations Pipeline (`.github/workflows/llm-ops.yml`)
+- **Model Training**: Automated fine-tuning workflows
+- **Model Evaluation**: Performance testing and validation
+- **RAG Indexing**: Automated document processing and indexing
+- **Safety Testing**: Content filtering and jailbreak testing
+- **Monitoring**: Model performance and drift detection
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-Key configuration variables in `.env`:
+Key configuration in `.env`:
 
 ```bash
-# Azure Configuration
+# Azure AI Foundry
+AZURE_AI_PROJECT_NAME=your-ai-foundry-project
 AZURE_SUBSCRIPTION_ID=your-subscription-id
 AZURE_RESOURCE_GROUP=your-resource-group
-AZURE_LOCATION=eastus
 
 # Azure OpenAI
-AZURE_OPENAI_ENDPOINT=https://your-openai-service.openai.azure.com/
+AZURE_OPENAI_ENDPOINT=https://your-openai.openai.azure.com/
 AZURE_OPENAI_API_KEY=your-api-key
-AZURE_OPENAI_DEPLOYMENT_NAME=gpt-35-turbo
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
 
-# Azure Machine Learning
-AZURE_ML_WORKSPACE_NAME=your-ml-workspace
+# Azure AI Search (RAG)
+AZURE_SEARCH_ENDPOINT=https://your-search.search.windows.net
+AZURE_SEARCH_API_KEY=your-search-key
 
-# Azure Storage
-AZURE_STORAGE_ACCOUNT_NAME=your-storage-account
+# Safety & Security
+CONTENT_FILTER_ENABLED=true
+PII_DETECTION_ENABLED=true
+JAILBREAK_DETECTION_ENABLED=true
 ```
 
-## 📈 Monitoring and Logging
+## 📈 Monitoring and Observability
 
-- **MLflow**: Experiment tracking and model registry
-- **Azure Monitor**: Application insights and logging
-- **Custom Metrics**: Model performance and usage metrics
+- **Azure Monitor**: Application insights and custom metrics
+- **OpenTelemetry**: Distributed tracing and performance monitoring
+- **Custom Dashboards**: Model performance, usage analytics, safety metrics
+- **Alerting**: Automated alerts for model drift, performance issues, safety violations
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/amazing-llm-feature`)
+3. Commit your changes (`git commit -m 'Add amazing LLM feature'`)
+4. Push to the branch (`git push origin feature/amazing-llm-feature`)
 5. Open a Pull Request
 
 ## 📝 License
@@ -221,9 +317,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/) for the project structure
-- [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service) for GenAI capabilities
-- [Azure Machine Learning](https://azure.microsoft.com/en-us/products/machine-learning) for MLOps platform
+- [Azure AI Foundry](https://azure.microsoft.com/en-us/products/ai-foundry) for the comprehensive AI platform
+- [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service) for GPT model access
+- [LangChain](https://python.langchain.com/) for AI application development frameworks
+- [FastAPI](https://fastapi.tiangolo.com/) for the high-performance API framework
 
 ## 📞 Support
 
@@ -231,4 +328,4 @@ For support, please open an issue on GitHub or contact the maintainers.
 
 ---
 
-**Built with ❤️ by Korkrid Kyle Akepanidtaworn**
+**Built with ❤️ for Comprehensive LLM Operations on Azure AI Foundry**
