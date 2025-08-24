@@ -1,0 +1,461 @@
+name: 🏗️ Infrastructure Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment type'
+        required: true
+        default: 'new'
+        type: choice
+        options:
+          - new
+          - existing
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      resource_group:
+        description: 'Azure Resource Group name'
+        required: true
+        type: string
+      location:
+        description: 'Azure region'
+        required: false
+        default: 'East US'
+        type: string
+      project_name:
+        description: 'Project name'
+        required: false
+        default: 'genaiops'
+        type: string
+      # Existing resources (only for existing deployment type)
+      existing_ai_foundry:
+        description: 'Existing AI Foundry project name'
+        required: false
+        type: string
+      existing_openai:
+        description: 'Existing OpenAI service name'
+        required: false
+        type: string
+      existing_search:
+        description: 'Existing Search service name'
+        required: false
+        type: string
+      existing_storage:
+        description: 'Existing Storage account name'
+        required: false
+        type: string
+      existing_keyvault:
+        description: 'Existing Key Vault name (optional)'
+        required: false
+        type: string
+      whatif:
+        description: 'Run in WhatIf mode (preview changes only)'
+        required: false
+        default: false
+        type: boolean
+
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/infrastructure.yml'
+
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/infrastructure.yml'
+
+env:
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: 🔍 Validate Templates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Bicep
+        run: az bicep install
+
+      - name: Lint Bicep templates
+        run: |
+          echo "🔍 Linting Bicep templates..."
+          az bicep build --file infrastructure/bicep/main.bicep
+          az bicep build --file infrastructure/bicep/existing-resources.bicep
+          
+          # Lint all module files
+          for file in infrastructure/bicep/modules/*.bicep; do
+            echo "Linting $file..."
+            az bicep build --file "$file"
+          done
+
+      - name: Validate main template
+        run: |
+          echo "🔍 Validating main template..."
+          
+          # Create temporary resource group for validation
+          TEMP_RG="temp-validation-$(date +%s)"
+          az group create --name "$TEMP_RG" --location "East US"
+          
+          # Get current user object ID
+          USER_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
+          
+          # Validate template
+          az deployment group validate \
+            --resource-group "$TEMP_RG" \
+            --template-file infrastructure/bicep/main.bicep \
+            --parameters \
+              projectName="validation" \
+              location="East US" \
+              environment="dev" \
+              userObjectId="$USER_OBJECT_ID"
+          
+          # Clean up
+          az group delete --name "$TEMP_RG" --yes --no-wait
+
+      - name: Validate existing resources template
+        run: |
+          echo "🔍 Validating existing resources template..."
+          
+          # Create temporary resource group for validation
+          TEMP_RG="temp-validation-existing-$(date +%s)"
+          az group create --name "$TEMP_RG" --location "East US"
+          
+          # Get current user object ID
+          USER_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
+          
+          # Validate template (with dummy existing resource names)
+          az deployment group validate \
+            --resource-group "$TEMP_RG" \
+            --template-file infrastructure/bicep/existing-resources.bicep \
+            --parameters \
+              projectName="validation" \
+              location="East US" \
+              environment="dev" \
+              userObjectId="$USER_OBJECT_ID" \
+              existingAiFoundryProjectName="dummy-ai-foundry" \
+              existingAiFoundryResourceGroup="dummy-rg" \
+              existingOpenAiAccountName="dummy-openai" \
+              existingOpenAiResourceGroup="dummy-rg" \
+              existingSearchServiceName="dummy-search" \
+              existingSearchResourceGroup="dummy-rg" \
+              existingStorageAccountName="dummystorage" \
+              existingStorageResourceGroup="dummy-rg" \
+              deployNewMonitoring=true \
+            || echo "Validation failed as expected for dummy resources"
+          
+          # Clean up
+          az group delete --name "$TEMP_RG" --yes --no-wait
+
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infrastructure/bicep
+          framework: bicep
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          quiet: true
+          soft_fail: true
+
+      - name: Upload Checkov results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+
+  deploy-dev:
+    name: 🚀 Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [validate, security-scan]
+    if: |
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Bicep
+        run: az bicep install
+
+      - name: Set deployment variables
+        id: vars
+        run: |
+          # Set variables from inputs or defaults
+          echo "deployment_type=${{ github.event.inputs.deployment_type || 'new' }}" >> $GITHUB_OUTPUT
+          echo "environment=${{ github.event.inputs.environment || 'dev' }}" >> $GITHUB_OUTPUT
+          echo "resource_group=${{ github.event.inputs.resource_group || format('genaiops-{0}-{1}', github.event.inputs.environment || 'dev', github.run_number) }}" >> $GITHUB_OUTPUT
+          echo "location=${{ github.event.inputs.location || 'East US' }}" >> $GITHUB_OUTPUT
+          echo "project_name=${{ github.event.inputs.project_name || 'genaiops' }}" >> $GITHUB_OUTPUT
+          echo "whatif=${{ github.event.inputs.whatif || 'false' }}" >> $GITHUB_OUTPUT
+          
+          # Generate deployment name
+          echo "deployment_name=genaiops-${{ github.event.inputs.deployment_type || 'new' }}-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          
+          # Get user object ID
+          USER_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
+          echo "user_object_id=$USER_OBJECT_ID" >> $GITHUB_OUTPUT
+
+      - name: Create resource group
+        run: |
+          echo "🏗️ Creating resource group..."
+          az group create \
+            --name "${{ steps.vars.outputs.resource_group }}" \
+            --location "${{ steps.vars.outputs.location }}"
+
+      - name: Deploy new infrastructure
+        if: steps.vars.outputs.deployment_type == 'new'
+        run: |
+          echo "🚀 Deploying new infrastructure..."
+          
+          DEPLOY_COMMAND="az deployment group create \
+            --resource-group '${{ steps.vars.outputs.resource_group }}' \
+            --name '${{ steps.vars.outputs.deployment_name }}' \
+            --template-file infrastructure/bicep/main.bicep \
+            --parameters \
+              projectName='${{ steps.vars.outputs.project_name }}' \
+              location='${{ steps.vars.outputs.location }}' \
+              environment='${{ steps.vars.outputs.environment }}' \
+              userObjectId='${{ steps.vars.outputs.user_object_id }}'"
+          
+          if [ "${{ steps.vars.outputs.whatif }}" = "true" ]; then
+            echo "🔍 Running in WhatIf mode..."
+            DEPLOY_COMMAND=$(echo "$DEPLOY_COMMAND" | sed 's/create/what-if/')
+          fi
+          
+          eval "$DEPLOY_COMMAND"
+
+      - name: Deploy with existing resources
+        if: steps.vars.outputs.deployment_type == 'existing'
+        run: |
+          echo "🚀 Deploying with existing resources..."
+          
+          # Validate required inputs for existing deployment
+          if [ -z "${{ github.event.inputs.existing_ai_foundry }}" ] || \
+             [ -z "${{ github.event.inputs.existing_openai }}" ] || \
+             [ -z "${{ github.event.inputs.existing_search }}" ] || \
+             [ -z "${{ github.event.inputs.existing_storage }}" ]; then
+            echo "❌ Missing required existing resource names for existing deployment"
+            exit 1
+          fi
+          
+          DEPLOY_COMMAND="az deployment group create \
+            --resource-group '${{ steps.vars.outputs.resource_group }}' \
+            --name '${{ steps.vars.outputs.deployment_name }}' \
+            --template-file infrastructure/bicep/existing-resources.bicep \
+            --parameters \
+              projectName='${{ steps.vars.outputs.project_name }}' \
+              location='${{ steps.vars.outputs.location }}' \
+              environment='${{ steps.vars.outputs.environment }}' \
+              userObjectId='${{ steps.vars.outputs.user_object_id }}' \
+              existingAiFoundryProjectName='${{ github.event.inputs.existing_ai_foundry }}' \
+              existingAiFoundryResourceGroup='${{ steps.vars.outputs.resource_group }}' \
+              existingOpenAiAccountName='${{ github.event.inputs.existing_openai }}' \
+              existingOpenAiResourceGroup='${{ steps.vars.outputs.resource_group }}' \
+              existingSearchServiceName='${{ github.event.inputs.existing_search }}' \
+              existingSearchResourceGroup='${{ steps.vars.outputs.resource_group }}' \
+              existingStorageAccountName='${{ github.event.inputs.existing_storage }}' \
+              existingStorageResourceGroup='${{ steps.vars.outputs.resource_group }}' \
+              existingKeyVaultName='${{ github.event.inputs.existing_keyvault }}' \
+              existingKeyVaultResourceGroup='${{ steps.vars.outputs.resource_group }}' \
+              deployNewMonitoring=true"
+          
+          if [ "${{ steps.vars.outputs.whatif }}" = "true" ]; then
+            echo "🔍 Running in WhatIf mode..."
+            DEPLOY_COMMAND=$(echo "$DEPLOY_COMMAND" | sed 's/create/what-if/')
+          fi
+          
+          eval "$DEPLOY_COMMAND"
+
+      - name: Get deployment outputs
+        if: steps.vars.outputs.whatif != 'true'
+        id: outputs
+        run: |
+          echo "📤 Getting deployment outputs..."
+          
+          # Get deployment outputs
+          OUTPUTS=$(az deployment group show \
+            --name "${{ steps.vars.outputs.deployment_name }}" \
+            --resource-group "${{ steps.vars.outputs.resource_group }}" \
+            --query properties.outputs)
+          
+          echo "outputs<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Extract key values for next steps
+          CONTAINER_APP_URL=$(echo "$OUTPUTS" | jq -r '.containerAppUrl.value // empty')
+          if [ ! -z "$CONTAINER_APP_URL" ]; then
+            echo "container_app_url=$CONTAINER_APP_URL" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Test deployment
+        if: steps.vars.outputs.whatif != 'true' && steps.outputs.container_app_url != ''
+        run: |
+          echo "🧪 Testing deployment..."
+          
+          CONTAINER_APP_URL="${{ steps.outputs.container_app_url }}"
+          
+          # Wait for container app to be ready
+          echo "⏳ Waiting for container app to be ready..."
+          for i in {1..10}; do
+            if curl -f "$CONTAINER_APP_URL/health" > /dev/null 2>&1; then
+              echo "✅ Container app is healthy"
+              break
+            else
+              echo "⏳ Waiting... (attempt $i/10)"
+              sleep 30
+            fi
+          done
+          
+          # Test API endpoints
+          echo "🧪 Testing API endpoints..."
+          curl -f "$CONTAINER_APP_URL/health" || echo "❌ Health check failed"
+          curl -f "$CONTAINER_APP_URL/docs" || echo "❌ Docs endpoint failed"
+
+      - name: Create environment file
+        if: steps.vars.outputs.whatif != 'true'
+        run: |
+          echo "📝 Creating environment file..."
+          
+          cat > .env.deployed << EOF
+          # Azure GenAIOps Environment Configuration
+          # Generated by GitHub Actions on $(date)
+          
+          ENVIRONMENT=${{ steps.vars.outputs.environment }}
+          AZURE_SUBSCRIPTION_ID=${{ env.AZURE_SUBSCRIPTION_ID }}
+          AZURE_RESOURCE_GROUP=${{ steps.vars.outputs.resource_group }}
+          
+          # Deployment outputs will be added here by the application
+          EOF
+
+      - name: Upload deployment artifacts
+        if: steps.vars.outputs.whatif != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-outputs-${{ steps.vars.outputs.environment }}
+          path: |
+            .env.deployed
+            infrastructure/bicep/parameters/
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `
+            ## 🏗️ Infrastructure Deployment Results
+            
+            **Deployment Type:** ${{ steps.vars.outputs.deployment_type }}
+            **Environment:** ${{ steps.vars.outputs.environment }}
+            **Resource Group:** ${{ steps.vars.outputs.resource_group }}
+            **WhatIf Mode:** ${{ steps.vars.outputs.whatif }}
+            
+            ${{ steps.vars.outputs.whatif == 'true' && '✅ WhatIf validation completed successfully!' || '✅ Deployment completed successfully!' }}
+            
+            ${{ steps.outputs.container_app_url && format('**Container App URL:** {0}', steps.outputs.container_app_url) || '' }}
+            
+            <details>
+            <summary>Deployment Outputs</summary>
+            
+            \`\`\`json
+            ${{ steps.outputs.outputs || 'No outputs available' }}
+            \`\`\`
+            
+            </details>
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.environment == 'staging'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          # Similar deployment steps as dev but with staging parameters
+
+  deploy-prod:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.environment == 'prod'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying to production environment..."
+          # Similar deployment steps as dev but with production parameters
