@@ -1,0 +1,67 @@
+{
+  "models": {
+    "chat": {
+      "primary": "gpt-4",
+      "secondary": "gpt-35-turbo",
+      "config": {
+        "maxTokens": 4000,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "frequencyPenalty": 0.0,
+        "presencePenalty": 0.0
+      }
+    },
+    "completion": {
+      "primary": "gpt-35-turbo",
+      "config": {
+        "maxTokens": 2000,
+        "temperature": 0.5,
+        "topP": 0.8
+      }
+    },
+    "embedding": {
+      "primary": "text-embedding-3-large",
+      "secondary": "text-embedding-ada-002",
+      "config": {
+        "dimensions": 1536,
+        "batchSize": 100
+      }
+    }
+  },
+  "deployments": {
+    "gpt-4": {
+      "model": "gpt-4",
+      "version": "1106-Preview",
+      "capacity": 10
+    },
+    "gpt-35-turbo": {
+      "model": "gpt-35-turbo", 
+      "version": "1106",
+      "capacity": 30
+    },
+    "text-embedding-ada-002": {
+      "model": "text-embedding-ada-002",
+      "version": "2",
+      "capacity": 30
+    },
+    "text-embedding-3-large": {
+      "model": "text-embedding-3-large",
+      "version": "1",
+      "capacity": 30
+    }
+  },
+  "fineTuning": {
+    "enabled": true,
+    "baseModels": ["gpt-35-turbo"],
+    "hyperparameters": {
+      "batchSize": 1,
+      "learningRateMultiplier": 1.0,
+      "nEpochs": 3
+    }
+  },
+  "evaluation": {
+    "metrics": ["accuracy", "relevance", "coherence", "fluency"],
+    "benchmarks": ["hellaswag", "arc", "mmlu"],
+    "customEvaluators": []
+  }
+}

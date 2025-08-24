@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "projectName": {
+      "value": "genaiops"
+    },
+    "location": {
+      "value": "East US"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "userObjectId": {
+      "value": "YOUR_USER_OBJECT_ID"
+    },
+    "existingAiFoundryProjectName": {
+      "value": "YOUR_EXISTING_AI_FOUNDRY_PROJECT"
+    },
+    "existingAiFoundryResourceGroup": {
+      "value": "YOUR_EXISTING_RESOURCE_GROUP"
+    },
+    "existingOpenAiAccountName": {
+      "value": "YOUR_EXISTING_OPENAI_ACCOUNT"
+    },
+    "existingOpenAiResourceGroup": {
+      "value": "YOUR_EXISTING_RESOURCE_GROUP"
+    },
+    "existingSearchServiceName": {
+      "value": "YOUR_EXISTING_SEARCH_SERVICE"
+    },
+    "existingSearchResourceGroup": {
+      "value": "YOUR_EXISTING_RESOURCE_GROUP"
+    },
+    "existingStorageAccountName": {
+      "value": "YOUR_EXISTING_STORAGE_ACCOUNT"
+    },
+    "existingStorageResourceGroup": {
+      "value": "YOUR_EXISTING_RESOURCE_GROUP"
+    },
+    "existingKeyVaultName": {
+      "value": ""
+    },
+    "existingKeyVaultResourceGroup": {
+      "value": "YOUR_EXISTING_RESOURCE_GROUP"
+    },
+    "deployNewMonitoring": {
+      "value": true
+    },
+    "existingLogAnalyticsWorkspaceName": {
+      "value": ""
+    },
+    "existingApplicationInsightsName": {
+      "value": ""
+    },
+    "tags": {
+      "value": {
+        "project": "AzureGenAIOps",
+        "environment": "dev",
+        "managedBy": "bicep-existing",
+        "costCenter": "IT",
+        "owner": "genai-team"
+      }
+    }
+  }
+}

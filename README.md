@@ -52,15 +52,109 @@ src/
 
 ## 🛠️ Setup
 
-### Prerequisites
+### 🚀 Quick Start with Automated Deployment
 
+The fastest way to get started is using our automated Azure deployment:
+
+#### Option 1: Deploy Everything New (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/korkridake/AzureGenAIOps.git
+cd AzureGenAIOps
+
+# Run automated deployment (creates all Azure resources)
+./infrastructure/scripts/deploy-new.sh
+```
+
+#### Option 2: Use Your Existing Azure Resources
+```bash
+# Deploy using your existing Azure AI services
+./infrastructure/scripts/deploy-existing.sh
+```
+
+The deployment scripts will:
+- ✅ Create/configure all required Azure resources
+- ✅ Set up monitoring and security
+- ✅ Deploy the GenAIOps application
+- ✅ Generate environment configuration files
+- ✅ Provide testing endpoints
+
+### 📋 Prerequisites
+
+#### For Automated Deployment:
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) 2.50.0+
+- Azure subscription with **Contributor** access
+- **10-15 minutes** for complete deployment
+
+#### For Manual Setup:
 - Python 3.9+
 - Azure CLI
 - Azure AI Foundry project
 - Azure OpenAI Service
 - Docker (optional)
 
-### Installation
+### 🏗️ Azure Infrastructure Deployment
+
+We provide comprehensive infrastructure-as-code using Azure Bicep:
+
+#### New Deployment (All Resources)
+Creates a complete GenAIOps platform with:
+- Azure AI Foundry Project
+- Azure OpenAI Service (GPT-4, GPT-3.5-Turbo, embeddings)
+- Azure AI Search (vector + semantic search)
+- Azure Storage (documents, models, data)
+- Azure Container Apps (application hosting)
+- Azure Monitor (observability)
+- Azure Key Vault (secure configuration)
+
+```bash
+# Interactive deployment
+./infrastructure/scripts/deploy-new.sh
+
+# Or with parameters
+./infrastructure/scripts/deploy-new.sh \
+  --resource-group "my-genaiops-rg" \
+  --location "East US" \
+  --environment "dev"
+```
+
+#### Existing Resources Deployment
+Uses your existing Azure AI services and adds minimal new infrastructure:
+
+```bash
+# Interactive deployment
+./infrastructure/scripts/deploy-existing.sh
+
+# Or with parameters  
+./infrastructure/scripts/deploy-existing.sh \
+  --ai-foundry "my-ai-foundry" \
+  --openai "my-openai" \
+  --search "my-search" \
+  --storage "mystorage"
+```
+
+#### PowerShell Alternative
+```powershell
+# Deploy new infrastructure
+.\infrastructure\scripts\deploy.ps1 -DeploymentType new
+
+# Deploy with existing resources
+.\infrastructure\scripts\deploy.ps1 -DeploymentType existing
+```
+
+#### GitHub Actions Integration
+Deploy via GitHub Actions with automated CI/CD:
+
+1. Set up Azure service principal secrets
+2. Use workflow dispatch to deploy infrastructure
+3. Supports dev/staging/prod environments
+4. Includes validation and security scanning
+
+See [Infrastructure README](infrastructure/README.md) for detailed documentation.
+
+### 🔧 Manual Installation (Alternative)
+
+If you prefer manual setup:
 
 1. **Clone the repository:**
    ```bash
@@ -86,39 +180,23 @@ src/
    # Edit .env with your Azure AI Foundry configuration
    ```
 
-### Azure AI Foundry Setup
+### 🔑 Configuration
 
-1. **Create Azure AI Foundry Project:**
-   ```bash
-   # Login to Azure
-   az login
-   
-   # Create resource group
-   az group create --name your-resource-group --location eastus
-   
-   # Create AI Foundry project (via Azure Portal or CLI)
-   az cognitiveservices account create \
-     --name your-ai-project \
-     --resource-group your-resource-group \
-     --kind AIServices \
-     --sku S0 \
-     --location eastus
-   ```
+After deployment, you'll have:
 
-2. **Configure Services:**
-   - Azure OpenAI Service with GPT-4 and embedding models
-   - Azure AI Search for RAG capabilities
-   - Azure Document Intelligence for data extraction
-   - Azure Storage for data and model artifacts
-   - Azure Monitor for observability
+#### Generated Files:
+- `.env.deployed` or `.env.existing` - Copy to `.env`
+- `deployment-outputs-*.json` - Resource details
+- Azure resources ready for immediate use
 
-3. **Set Environment Variables:**
-   ```bash
-   export AZURE_AI_PROJECT_NAME="your-ai-foundry-project"
-   export AZURE_OPENAI_ENDPOINT="https://your-openai.openai.azure.com/"
-   export AZURE_OPENAI_API_KEY="your-api-key"
-   # ... other variables from .env.example
-   ```
+#### Key Environment Variables:
+```bash
+AZURE_AI_PROJECT_NAME=your-ai-foundry-project
+AZURE_OPENAI_ENDPOINT=https://your-openai.openai.azure.com/
+AZURE_SEARCH_ENDPOINT=https://your-search.search.windows.net
+AZURE_STORAGE_ACCOUNT_NAME=your-storage-account
+AZURE_KEY_VAULT_NAME=your-key-vault
+```
 
 ## 🚀 Usage
 
