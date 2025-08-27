@@ -1,0 +1,86 @@
+name: Model Training Pipeline
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      data_version:
+        description: 'Data version to use for training'
+        required: false
+        default: 'latest'
+      model_name:
+        description: 'Model name'
+        required: false
+        default: 'gpt-35-turbo'
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Download training data from Azure Storage
+      run: |
+        python scripts/download_data.py --version ${{ github.event.inputs.data_version || 'latest' }}
+      env:
+        AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+    
+    - name: Preprocess data
+      run: |
+        python -m src.data.make_dataset data/raw/training_data.csv data/processed/
+    
+    - name: Train model
+      run: |
+        python -m src.models.train_model \
+          --train-data data/processed/train.csv \
+          --val-data data/processed/validation.csv \
+          --output-dir models/
+      env:
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+    
+    - name: Evaluate model
+      run: |
+        python scripts/evaluate_model.py \
+          --test-data data/processed/test.csv \
+          --model-dir models/
+    
+    - name: Upload model artifacts to Azure Storage
+      run: |
+        python scripts/upload_model.py --model-dir models/
+      env:
+        AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+    
+    - name: Deploy model if performance meets threshold
+      run: |
+        python scripts/deploy_model.py --model-dir models/
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+    
+    - name: Notify on completion
+      if: always()
+      run: |
+        python scripts/notify_completion.py --status ${{ job.status }}
+      env:
+        TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}

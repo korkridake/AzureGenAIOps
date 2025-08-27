@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "projectName": {
+      "value": "genaiops"
+    },
+    "location": {
+      "value": "East US"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "userObjectId": {
+      "value": "YOUR_USER_OBJECT_ID"
+    },
+    "tags": {
+      "value": {
+        "project": "AzureGenAIOps",
+        "environment": "dev",
+        "managedBy": "bicep",
+        "costCenter": "IT",
+        "owner": "genai-team"
+      }
+    }
+  }
+}
