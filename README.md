@@ -57,6 +57,11 @@ src/
 The fastest way to get started is using our automated Azure deployment:
 
 #### Option 1: Deploy Everything New (Recommended)
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fkorkridake%2FAzureGenAIOps%2Fmain%2Finfrastructure%2Fazuredeploy.json)
+
+Click the "Deploy to Azure" button above for a guided deployment experience, or use the command line:
+
 ```bash
 # Clone the repository
 git clone https://github.com/korkridake/AzureGenAIOps.git
