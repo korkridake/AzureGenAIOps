@@ -2,229 +2,337 @@
 
 A comprehensive GenAIOps (Generative AI Operations) platform built on Azure AI Foundry, providing end-to-end LLM lifecycle management with industry best practices.
 
-## 📖 Documentation
+## 📖 Documentation & Quick Navigation
 
-- **🎯 [END-TO-END GUIDE](END_TO_END_GUIDE.md)** - Complete setup and operations guide
+- **🎯 [END-TO-END GUIDE](END_TO_END_GUIDE.md)** - Complete lifecycle guide following this structure
 - **🔐 [GitHub Secrets Guide](GITHUB_SECRETS_GUIDE.md)** - Secure credential management  
 - **🔄 [Migration Guide](MIGRATION_GUIDE.md)** - Migrate from .env files to GitHub secrets
 - **🏗️ [Infrastructure Guide](infrastructure/README.md)** - Deployment details
 
-## 🚀 Features
+## 🚀 Getting Started
 
-### Core LLM Operations
-- **🚀 LLM Training**: Fine-tuning and custom model training with Azure OpenAI
-- **🧱 LLM Application Development**: Build production-ready AI applications  
-- **🩸 LLM RAG**: Retrieval-Augmented Generation with Azure AI Search
-- **🟩 LLM Inference**: High-performance model serving and completions
-- **🚧 LLM Serving**: Scalable model deployment and endpoint management
-- **📤 LLM Data Extraction**: Document processing with Azure Document Intelligence
-- **🌠 LLM Data Generation**: Synthetic data creation for training and testing
-- **💎 LLM Agents**: AI agent frameworks and multi-step workflows
-- **⚖️ LLM Evaluation**: Comprehensive model testing and quality assessment
-- **🔍 LLM Monitoring**: Real-time observability and performance tracking
-- **📅 LLM Prompts**: Advanced prompt engineering and management
-- **📝 LLM Structured Outputs**: JSON, XML, and schema-based generation
-- **🛑 LLM Safety and Security**: Content filtering and jailbreak protection
-- **💠 LLM Embedding Models**: Vector search and semantic similarity
+Start your GenAI journey with these foundational steps:
 
-### Azure AI Foundry Integration
-- Seamless integration with Azure AI Foundry projects
-- Native support for Azure OpenAI Service
-- Azure AI Search for vector and hybrid search
-- Azure Document Intelligence for data extraction
-- Azure Monitor for comprehensive observability
-- Azure Key Vault for secure credential management
+### 🏗️ Resource Set-up
+Set up compute, storage, dependencies, and API keys for your Azure AI environment.
 
-## 🏗️ Architecture
+**Quick Deployment Options:**
+
+#### Option 1: New Azure Resources (Greenfield)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fkorkridake%2FAzureGenAIOps%2Fmain%2Finfrastructure%2Fazuredeploy.json)
+
+```bash
+# Automated deployment creates all Azure resources
+git clone https://github.com/korkridake/AzureGenAIOps.git
+cd AzureGenAIOps
+./infrastructure/scripts/deploy-new.sh
+```
+
+#### Option 2: Existing Azure Resources (Brownfield)
+```bash
+# Use your existing Azure AI services
+./infrastructure/scripts/deploy-existing.sh
+```
+
+**What You Get:**
+- ✅ Azure AI Foundry Project with GPT-4 & embeddings
+- ✅ Azure AI Search for vector/semantic search
+- ✅ Azure Storage for documents and models
+- ✅ Azure Monitor for observability
+- ✅ Azure Key Vault for secure credentials
+- ✅ FastAPI application with all LLM operations
+
+### 🎮 Playground
+Try out model capabilities interactively before diving into code.
+
+```bash
+# Start the interactive API server
+uvicorn src.app:app --host 0.0.0.0 --port 8000
+
+# Access interactive playground
+open http://localhost:8000/docs
+```
+
+**Key Playground Features:**
+- **💬 Chat Completions**: Test conversational AI capabilities
+- **📝 Text Generation**: Experiment with creative writing and content generation
+- **🔍 Search & RAG**: Query your documents with semantic search
+- **💠 Embeddings**: Generate vector representations for similarity search
+- **🛡️ Safety Testing**: Test content filtering and security measures
+
+## 🎨 Customization
+
+Enhance your AI applications with domain-specific capabilities:
+
+### 🩸 RAG (Retrieval-Augmented Generation)
+Add domain-specific knowledge via embeddings and vector databases.
+
+```python
+from src.rag import RAGPipeline
+
+# Initialize RAG with your documents
+rag = RAGPipeline(config)
+
+# Query with context retrieval
+response = rag.query(
+    question="What are the key features of our product?",
+    top_k=5,
+    score_threshold=0.7
+)
+```
+
+**RAG Capabilities:**
+- **📄 Document Processing**: PDF, Word, PowerPoint, and web content
+- **🔍 Vector Search**: Semantic similarity and hybrid search
+- **🧠 Contextual Responses**: Grounded answers from your knowledge base
+- **⚡ Real-time Indexing**: Dynamic document updates and search
+
+### 🎯 Fine-tuning
+Train models further with custom datasets for specialized tasks.
+
+```python
+from src.llm_training import FineTuningPipeline
+
+# Prepare your training data
+training_pipeline = FineTuningPipeline(config)
+
+# Fine-tune on domain-specific data
+job = training_pipeline.start_fine_tuning(
+    training_file="path/to/training_data.jsonl",
+    model="gpt-3.5-turbo",
+    task_type="classification"
+)
+```
+
+**Fine-tuning Features:**
+- **📊 Custom Datasets**: Support for classification, generation, and instruction-following
+- **🔄 Training Pipelines**: Automated data preparation and model training
+- **📈 Performance Tracking**: Monitor training metrics and validation accuracy
+- **🚀 Model Deployment**: Seamless deployment of fine-tuned models
+
+## 🔬 Experimentation
+
+Systematically develop and refine your AI solutions:
+
+### 📝 Prompt Management
+Organize and iterate on prompts systematically for optimal performance.
+
+```python
+from src.prompts import PromptManager
+
+# Manage prompts with versioning
+prompt_manager = PromptManager()
+
+# Create prompt templates
+prompt_manager.create_template(
+    name="customer_support",
+    template="You are a helpful customer support agent. {context}\n\nCustomer: {question}\nAgent:",
+    version="1.0"
+)
+
+# Test prompt variations
+results = prompt_manager.test_variations(
+    template_name="customer_support",
+    test_cases=test_data,
+    models=["gpt-4", "gpt-3.5-turbo"]
+)
+```
+
+**Prompt Management Features:**
+- **📚 Template Library**: Reusable prompt templates with versioning
+- **🔄 A/B Testing**: Compare prompt performance across models
+- **📊 Analytics**: Track prompt effectiveness and model responses
+- **🎯 Optimization**: Automated prompt tuning and improvement suggestions
+
+### ⚖️ Evaluation / Debugging
+Test outputs, improve reliability, and validate quality systematically.
+
+```python
+from src.evaluation import ModelEvaluator
+
+# Comprehensive model evaluation
+evaluator = ModelEvaluator(config)
+
+# Run evaluation suite
+results = evaluator.evaluate_model(
+    model_name="gpt-4",
+    test_dataset="eval_data.json",
+    metrics=["accuracy", "relevance", "safety", "hallucination"]
+)
+
+# Generate evaluation report
+evaluator.generate_report(results, output_path="evaluation_report.html")
+```
+
+**Evaluation Capabilities:**
+- **🎯 Quality Metrics**: Accuracy, relevance, coherence, and factuality
+- **🛡️ Safety Testing**: Content filtering, bias detection, and jailbreak resistance
+- **📊 Performance Analysis**: Latency, throughput, and cost optimization
+- **🔍 Debugging Tools**: Error analysis, trace visualization, and improvement recommendations
+
+## 🚀 Production
+
+Scale your AI solutions with enterprise-grade operations:
+
+### 🔗 Orchestration
+Build pipelines and workflows that combine models, tools, and APIs.
+
+```python
+from src.agents import WorkflowOrchestrator
+
+# Create multi-step AI workflows
+orchestrator = WorkflowOrchestrator(config)
+
+# Define complex workflows
+workflow = orchestrator.create_workflow([
+    {"step": "document_analysis", "model": "gpt-4"},
+    {"step": "data_extraction", "tool": "document_intelligence"},
+    {"step": "summary_generation", "model": "gpt-3.5-turbo"},
+    {"step": "quality_check", "validator": "content_safety"}
+])
+
+# Execute workflow
+result = orchestrator.run_workflow(workflow, input_data)
+```
+
+**Orchestration Features:**
+- **🔄 Multi-Agent Workflows**: Coordinate multiple AI models and tools
+- **⚡ Parallel Processing**: Optimize performance with concurrent execution
+- **🛡️ Error Handling**: Robust error recovery and retry mechanisms
+- **📊 Workflow Analytics**: Monitor execution metrics and optimize performance
+
+### 🤖 Automation
+Streamline tasks like data ingestion, retraining, and deployment.
+
+```bash
+# Automated CI/CD pipeline
+make deploy-production
+
+# Scheduled model retraining
+make schedule-training
+
+# Automated data pipeline
+make run-data-pipeline
+```
+
+**Automation Capabilities:**
+- **🔄 CI/CD Pipelines**: Automated testing, building, and deployment
+- **📅 Scheduled Operations**: Automatic model retraining and data updates
+- **🔍 Monitoring Integration**: Automated alerting and response workflows
+- **📈 Scaling**: Auto-scaling based on demand and performance metrics
+
+### 📊 Monitoring
+Track performance, latency, costs, and drift over time for production reliability.
+
+```python
+from src.monitoring import ProductionMonitor
+
+# Set up comprehensive monitoring
+monitor = ProductionMonitor(config)
+
+# Track key metrics
+monitor.track_metrics([
+    "request_latency",
+    "model_accuracy", 
+    "cost_per_request",
+    "safety_violations",
+    "model_drift"
+])
+
+# Set up alerting
+monitor.configure_alerts({
+    "latency_threshold": "2s",
+    "accuracy_threshold": "0.85",
+    "cost_threshold": "$0.01"
+})
+```
+
+**Monitoring Features:**
+- **📈 Performance Metrics**: Real-time latency, throughput, and accuracy tracking
+- **💰 Cost Management**: Detailed cost analysis and budget alerts
+- **🚨 Alerting**: Proactive notifications for performance issues and anomalies
+- **📊 Dashboards**: Comprehensive visualizations with Azure Monitor integration
+
+## 🏗️ Platform Architecture
 
 ```
 src/
-├── common/                # Azure AI Foundry client and shared utilities
-├── llm_training/          # 🚀 Model training and fine-tuning
-├── app_development/       # 🧱 Application development frameworks
+├── common/                # 🔧 Azure AI Foundry client and shared utilities
+├── llm_training/          # 🎯 Model fine-tuning and custom training
 ├── rag/                   # 🩸 Retrieval-Augmented Generation
+├── prompts/               # 📝 Prompt engineering and management
+├── evaluation/            # ⚖️ Model evaluation and testing
+├── agents/                # 🔗 AI workflows and orchestration
+├── monitoring/            # 📊 Production monitoring and observability
 ├── inference/             # 🟩 Model inference and completions
 ├── serving/               # 🚧 Model serving and deployment
-├── data_extraction/       # 📤 Document processing and data extraction
-├── data_generation/       # 🌠 Synthetic data generation
-├── agents/                # 💎 AI agents and workflows
-├── evaluation/            # ⚖️ Model evaluation and testing
-├── monitoring/            # 🔍 Observability and monitoring
-├── prompts/               # 📅 Prompt engineering and management
-├── structured_outputs/    # 📝 Structured output generation
-├── safety_security/       # 🛑 Safety filtering and security
-├── embeddings/            # 💠 Embedding generation and vector ops
-└── app.py                 # FastAPI application with all endpoints
+├── safety_security/       # 🛡️ Content filtering and security
+├── embeddings/            # 💠 Vector operations and similarity
+├── app_development/       # 🧱 Application development frameworks
+├── data_extraction/       # 📤 Document processing and extraction
+├── data_generation/       # 🌠 Synthetic data creation
+├── structured_outputs/    # 📋 JSON, XML, and schema-based generation
+└── app.py                 # 🚀 FastAPI application with all endpoints
 ```
 
-## 🛠️ Setup
+## 🛠️ Development Setup
 
-### 📚 Complete Setup Guide
+### 📋 Prerequisites
+- Python 3.9+
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) 2.50.0+
+- Azure subscription with **Contributor** access
+- Docker (optional)
 
-**🎯 NEW: [END-TO-END GUIDE](END_TO_END_GUIDE.md) - Comprehensive step-by-step guide covering:**
-- 🏗️ Resource setup (Greenfield & Brownfield deployments)  
-- 🔐 GitHub secrets integration with Azure subscription
-- 🔬 Experimentation with RAG, Fine-Tuning, Prompt Management & Evaluation
-- 🧪 Unit testing and development workflows
-- 🚀 CI/CD for LLM operations pipeline
-- 📊 Monitoring and observability
-
-### 🚀 Quick Start with Automated Deployment
-
-The fastest way to get started is using our automated Azure deployment:
-
-#### Option 1: Deploy Everything New (Recommended)
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fkorkridake%2FAzureGenAIOps%2Fmain%2Finfrastructure%2Fazuredeploy.json)
-
-Click the "Deploy to Azure" button above for a guided deployment experience, or use the command line:
+### 🔧 Local Development
 
 ```bash
-# Clone the repository
+# Clone and set up the repository
 git clone https://github.com/korkridake/AzureGenAIOps.git
 cd AzureGenAIOps
 
-# Run automated deployment (creates all Azure resources)
-./infrastructure/scripts/deploy-new.sh
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -e .
+
+# Copy configuration template
+cp .env.example .env
+# Edit .env with your Azure AI Foundry configuration
 ```
-
-#### Option 2: Use Your Existing Azure Resources
-```bash
-# Deploy using your existing Azure AI services
-./infrastructure/scripts/deploy-existing.sh
-```
-
-The deployment scripts will:
-- ✅ Create/configure all required Azure resources
-- ✅ Set up monitoring and security
-- ✅ Deploy the GenAIOps application
-- ✅ Generate environment configuration files
-- ✅ Provide testing endpoints
-
-### 📋 Prerequisites
-
-#### For Automated Deployment:
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) 2.50.0+
-- Azure subscription with **Contributor** access
-- **10-15 minutes** for complete deployment
-
-#### For Manual Setup:
-- Python 3.9+
-- Azure CLI
-- Azure AI Foundry project
-- Azure OpenAI Service
-- Docker (optional)
-
-### 🏗️ Azure Infrastructure Deployment
-
-We provide comprehensive infrastructure-as-code using Azure Bicep:
-
-#### New Deployment (All Resources)
-Creates a complete GenAIOps platform with:
-- Azure AI Foundry Project
-- Azure OpenAI Service (GPT-4, GPT-3.5-Turbo, embeddings)
-- Azure AI Search (vector + semantic search)
-- Azure Storage (documents, models, data)
-- Azure Container Apps (application hosting)
-- Azure Monitor (observability)
-- Azure Key Vault (secure configuration)
-
-```bash
-# Interactive deployment
-./infrastructure/scripts/deploy-new.sh
-
-# Or with parameters
-./infrastructure/scripts/deploy-new.sh \
-  --resource-group "my-genaiops-rg" \
-  --location "East US" \
-  --environment "dev"
-```
-
-#### Existing Resources Deployment
-Uses your existing Azure AI services and adds minimal new infrastructure:
-
-```bash
-# Interactive deployment
-./infrastructure/scripts/deploy-existing.sh
-
-# Or with parameters  
-./infrastructure/scripts/deploy-existing.sh \
-  --ai-foundry "my-ai-foundry" \
-  --openai "my-openai" \
-  --search "my-search" \
-  --storage "mystorage"
-```
-
-#### PowerShell Alternative
-```powershell
-# Deploy new infrastructure
-.\infrastructure\scripts\deploy.ps1 -DeploymentType new
-
-# Deploy with existing resources
-.\infrastructure\scripts\deploy.ps1 -DeploymentType existing
-```
-
-#### GitHub Actions Integration
-Deploy via GitHub Actions with automated CI/CD:
-
-1. Set up Azure service principal secrets
-2. Use workflow dispatch to deploy infrastructure
-3. Supports dev/staging/prod environments
-4. Includes validation and security scanning
-
-For secure secret management, follow the [GitHub Secrets Integration Guide](GITHUB_SECRETS_GUIDE.md).
-
-See [Infrastructure README](infrastructure/README.md) for detailed documentation.
-
-### 🔧 Manual Installation (Alternative)
-
-If you prefer manual setup:
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/korkridake/AzureGenAIOps.git
-   cd AzureGenAIOps
-   ```
-
-2. **Create virtual environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   pip install -e .
-   ```
-
-4. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Azure AI Foundry configuration
-   ```
 
 ### 🔑 Configuration
 
-After deployment, you'll have:
+Key environment variables in `.env`:
 
-#### Generated Files:
-- `.env.deployed` or `.env.existing` - Copy to `.env`
-- `deployment-outputs-*.json` - Resource details
-- Azure resources ready for immediate use
-
-#### Key Environment Variables:
 ```bash
+# Azure AI Foundry
 AZURE_AI_PROJECT_NAME=your-ai-foundry-project
+AZURE_SUBSCRIPTION_ID=your-subscription-id
+AZURE_RESOURCE_GROUP=your-resource-group
+
+# Azure OpenAI
 AZURE_OPENAI_ENDPOINT=https://your-openai.openai.azure.com/
+AZURE_OPENAI_API_KEY=your-api-key
+AZURE_OPENAI_DEPLOYMENT_NAME=gpt-4
+
+# Azure AI Search (for RAG)
 AZURE_SEARCH_ENDPOINT=https://your-search.search.windows.net
-AZURE_STORAGE_ACCOUNT_NAME=your-storage-account
-AZURE_KEY_VAULT_NAME=your-key-vault
+AZURE_SEARCH_API_KEY=your-search-key
+
+# Safety & Security
+CONTENT_FILTER_ENABLED=true
+PII_DETECTION_ENABLED=true
+JAILBREAK_DETECTION_ENABLED=true
 ```
+
+For secure production setup, see the [GitHub Secrets Integration Guide](GITHUB_SECRETS_GUIDE.md).
 
 ## 🚀 Usage
 
-### Start the API Server
+### Start the Platform
 
 ```bash
 # Start the comprehensive LLM operations API
@@ -232,13 +340,15 @@ uvicorn src.app:app --host 0.0.0.0 --port 8000
 
 # Or use the make command
 make run
+
+# Access interactive documentation
+open http://localhost:8000/docs
 ```
 
-### API Endpoints
+### Core API Examples
 
-#### 🟩 Inference & Completions
+#### 💬 Chat Completions (Getting Started)
 ```bash
-# Chat completion
 curl -X POST "http://localhost:8000/chat/completions" \
   -H "Content-Type: application/json" \
   -d '{
@@ -248,19 +358,10 @@ curl -X POST "http://localhost:8000/chat/completions" \
     "max_tokens": 1000,
     "temperature": 0.7
   }'
-
-# Text completion
-curl -X POST "http://localhost:8000/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "The future of AI is",
-    "max_tokens": 500
-  }'
 ```
 
-#### 🩸 RAG (Retrieval-Augmented Generation)
+#### 🩸 RAG Query (Customization)
 ```bash
-# RAG query with document retrieval
 curl -X POST "http://localhost:8000/rag/query" \
   -H "Content-Type: application/json" \
   -d '{
@@ -270,67 +371,117 @@ curl -X POST "http://localhost:8000/rag/query" \
   }'
 ```
 
-#### 💠 Embeddings
+#### 📝 Prompt Testing (Experimentation)
 ```bash
-# Generate embeddings
-curl -X POST "http://localhost:8000/embeddings" \
+curl -X POST "http://localhost:8000/prompts/test" \
   -H "Content-Type: application/json" \
   -d '{
-    "texts": ["Hello world", "Azure AI is powerful"]
+    "template": "You are a {role}. {context}\n\nUser: {question}",
+    "variables": {
+      "role": "helpful assistant",
+      "context": "Focus on being accurate and concise",
+      "question": "How does fine-tuning work?"
+    }
   }'
 ```
 
-#### 🛑 Safety & Security
-```bash
-# Content safety check
-curl -X POST "http://localhost:8000/safety/check" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "How to build a machine learning model?",
-    "check_type": "both"
-  }'
-```
-
-#### 🔍 Monitoring
+#### 📊 Monitoring Metrics (Production)
 ```bash
 # Get system metrics
 curl "http://localhost:8000/metrics"
 
 # Health check
 curl "http://localhost:8000/health"
+
+# Model performance
+curl "http://localhost:8000/monitoring/model-performance"
 ```
 
 ### Python SDK Usage
 
+#### Getting Started
 ```python
 from src.common import AzureFoundryClient, LLMConfig
 from src.inference import InferenceEngine
-from src.rag import RAGPipeline
-from src.embeddings import EmbeddingGenerator
 
-# Initialize components
+# Initialize with your configuration
 config = LLMConfig()
-foundry_client = AzureFoundryClient()
-inference_engine = InferenceEngine(config)
-rag_pipeline = RAGPipeline(config)
+client = AzureFoundryClient()
+inference = InferenceEngine(config)
 
-# Generate chat completion
-response = inference_engine.chat_completion([
-    {"role": "user", "content": "Explain quantum computing"}
+# Basic chat completion
+response = inference.chat_completion([
+    {"role": "user", "content": "Hello, how can you help me?"}
+])
+print(response.content)
+```
+
+#### Customization with RAG
+```python
+from src.rag import RAGPipeline
+
+# Initialize RAG pipeline
+rag = RAGPipeline(config)
+
+# Add your documents
+rag.add_documents([
+    "path/to/document1.pdf",
+    "path/to/document2.docx"
 ])
 
-# Perform RAG query
-rag_response = rag_pipeline.query(
-    question="What is Azure AI Foundry?",
+# Query with context
+response = rag.query(
+    question="What is our company policy on remote work?",
     top_k=3
 )
+print(f"Answer: {response.answer}")
+print(f"Sources: {response.sources}")
+```
 
-# Generate embeddings
-embeddings = EmbeddingGenerator(config)
-vectors = embeddings.generate_embeddings_batch([
-    "Text to embed",
-    "Another text sample"
-])
+#### Experimentation with Prompts
+```python
+from src.prompts import PromptManager
+from src.evaluation import ModelEvaluator
+
+# Set up prompt testing
+prompt_manager = PromptManager()
+evaluator = ModelEvaluator(config)
+
+# Create and test prompt variations
+prompt_manager.create_template(
+    name="summarization",
+    template="Summarize the following text in {style} style:\n\n{text}",
+    version="1.0"
+)
+
+# Evaluate different styles
+test_results = evaluator.evaluate_prompt_variations(
+    template_name="summarization",
+    test_data=sample_texts,
+    variations={"style": ["formal", "casual", "technical"]}
+)
+```
+
+#### Production Monitoring
+```python
+from src.monitoring import ProductionMonitor
+
+# Set up monitoring
+monitor = ProductionMonitor(config)
+
+# Track custom metrics
+monitor.log_request_metrics({
+    "model": "gpt-4",
+    "tokens_used": 150,
+    "latency_ms": 1200,
+    "cost_usd": 0.003
+})
+
+# Get performance insights
+insights = monitor.get_performance_insights(
+    time_range="24h",
+    metrics=["latency", "accuracy", "cost"]
+)
 ```
 
 ## 🧪 Testing & Development
