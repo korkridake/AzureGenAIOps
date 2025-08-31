@@ -1,0 +1,42 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting azure-cognitiveservices-language-textanalytics
+  Downloading azure_cognitiveservices_language_textanalytics-0.2.2-py2.py3-none-any.whl.metadata
+     - 3.5 kB ? 0:00:00
+Collecting msrest>=0.6.21 (from azure-cognitiveservices-language-textanalytics)
+  Downloading msrest-0.7.1-py3-none-any.whl.metadata
+     - 21.7 kB 205.4 MB/s 0:00:00
+Collecting azure-common~=1.1 (from azure-cognitiveservices-language-textanalytics)
+  Downloading azure_common-1.1.28-py2.py3-none-any.whl.metadata
+     - 5.0 kB ? 0:00:00
+Collecting azure-mgmt-core<2.0.0,>=1.2.0 (from azure-cognitiveservices-language-textanalytics)
+  Downloading azure_mgmt_core-1.6.0-py3-none-any.whl.metadata
+     - 4.6 kB ? 0:00:00
+Collecting azure-core>=1.32.0 (from azure-mgmt-core<2.0.0,>=1.2.0->azure-cognitiveservices-language-textanalytics)
+  Downloading azure_core-1.35.0-py3-none-any.whl.metadata
+     - 44.4 kB 229.8 MB/s 0:00:00
+Requirement already satisfied: certifi>=2017.4.17 in /usr/lib/python3/dist-packages (from msrest>=0.6.21->azure-cognitiveservices-language-textanalytics) (2023.11.17)
+Collecting isodate>=0.6.0 (from msrest>=0.6.21->azure-cognitiveservices-language-textanalytics)
+  Downloading isodate-0.7.2-py3-none-any.whl.metadata
+     - 11.9 kB 76.4 MB/s 0:00:00
+Collecting requests-oauthlib>=0.5.0 (from msrest>=0.6.21->azure-cognitiveservices-language-textanalytics)
+  Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl.metadata
+     - 11.1 kB 40.6 MB/s 0:00:00
+Requirement already satisfied: requests~=2.16 in /usr/lib/python3/dist-packages (from msrest>=0.6.21->azure-cognitiveservices-language-textanalytics) (2.31.0)
+Requirement already satisfied: six>=1.11.0 in /usr/lib/python3/dist-packages (from azure-core>=1.32.0->azure-mgmt-core<2.0.0,>=1.2.0->azure-cognitiveservices-language-textanalytics) (1.16.0)
+Requirement already satisfied: typing-extensions>=4.6.0 in /usr/lib/python3/dist-packages (from azure-core>=1.32.0->azure-mgmt-core<2.0.0,>=1.2.0->azure-cognitiveservices-language-textanalytics) (4.10.0)
+Requirement already satisfied: oauthlib>=3.0.0 in /usr/lib/python3/dist-packages (from requests-oauthlib>=0.5.0->msrest>=0.6.21->azure-cognitiveservices-language-textanalytics) (3.2.2)
+Downloading azure_cognitiveservices_language_textanalytics-0.2.2-py2.py3-none-any.whl
+   - 44.8 kB 95.7 MB/s 0:00:00
+Downloading azure_common-1.1.28-py2.py3-none-any.whl
+   - 14.5 kB 137.1 MB/s 0:00:00
+Downloading azure_mgmt_core-1.6.0-py3-none-any.whl
+   - 29.3 kB 209.0 MB/s 0:00:00
+Downloading msrest-0.7.1-py3-none-any.whl
+   - 85.4 kB 205.5 MB/s 0:00:00
+Downloading azure_core-1.35.0-py3-none-any.whl
+   - 210.7 kB 173.0 MB/s 0:00:00
+Downloading isodate-0.7.2-py3-none-any.whl
+   - 22.3 kB 154.2 MB/s 0:00:00
+Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl
+   - 24.2 kB 174.8 MB/s 0:00:00
+Would install azure-cognitiveservices-language-textanalytics-0.2.2 azure-common-1.1.28 azure-core-1.35.0 azure-mgmt-core-1.6.0 isodate-0.7.2 msrest-0.7.1 requests-oauthlib-2.0.0
