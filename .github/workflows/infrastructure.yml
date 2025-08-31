@@ -35,24 +35,8 @@ on:
         default: 'genaiops'
         type: string
       # Existing resources (only for existing deployment type)
-      existing_ai_foundry:
-        description: 'Existing AI Foundry project name'
-        required: false
-        type: string
-      existing_openai:
-        description: 'Existing OpenAI service name'
-        required: false
-        type: string
-      existing_search:
-        description: 'Existing Search service name'
-        required: false
-        type: string
-      existing_storage:
-        description: 'Existing Storage account name'
-        required: false
-        type: string
-      existing_keyvault:
-        description: 'Existing Key Vault name (optional)'
+      existing_resources:
+        description: 'JSON with existing resource names: {"ai_foundry":"name","openai":"name","search":"name","storage":"name","keyvault":"name"}'
         required: false
         type: string
       whatif:
@@ -264,19 +248,45 @@ jobs:
           
           eval "$DEPLOY_COMMAND"
 
+      - name: Parse existing resources
+        if: steps.vars.outputs.deployment_type == 'existing'
+        id: existing
+        run: |
+          echo "📋 Parsing existing resources..."
+          
+          # Parse JSON input for existing resources
+          EXISTING_RESOURCES='${{ github.event.inputs.existing_resources }}'
+          
+          if [ -z "$EXISTING_RESOURCES" ] || [ "$EXISTING_RESOURCES" = "null" ]; then
+            echo "❌ Missing existing_resources JSON for existing deployment type"
+            echo "Expected format: {\"ai_foundry\":\"name\",\"openai\":\"name\",\"search\":\"name\",\"storage\":\"name\",\"keyvault\":\"name\"}"
+            exit 1
+          fi
+          
+          # Extract individual resource names
+          AI_FOUNDRY=$(echo "$EXISTING_RESOURCES" | jq -r '.ai_foundry // empty')
+          OPENAI=$(echo "$EXISTING_RESOURCES" | jq -r '.openai // empty')
+          SEARCH=$(echo "$EXISTING_RESOURCES" | jq -r '.search // empty')
+          STORAGE=$(echo "$EXISTING_RESOURCES" | jq -r '.storage // empty')
+          KEYVAULT=$(echo "$EXISTING_RESOURCES" | jq -r '.keyvault // empty')
+          
+          # Validate required resources
+          if [ -z "$AI_FOUNDRY" ] || [ -z "$OPENAI" ] || [ -z "$SEARCH" ] || [ -z "$STORAGE" ]; then
+            echo "❌ Missing required resource names. Found: ai_foundry=$AI_FOUNDRY, openai=$OPENAI, search=$SEARCH, storage=$STORAGE"
+            exit 1
+          fi
+          
+          # Set outputs for next step
+          echo "ai_foundry=$AI_FOUNDRY" >> $GITHUB_OUTPUT
+          echo "openai=$OPENAI" >> $GITHUB_OUTPUT
+          echo "search=$SEARCH" >> $GITHUB_OUTPUT
+          echo "storage=$STORAGE" >> $GITHUB_OUTPUT
+          echo "keyvault=$KEYVAULT" >> $GITHUB_OUTPUT
+
       - name: Deploy with existing resources
         if: steps.vars.outputs.deployment_type == 'existing'
         run: |
           echo "🚀 Deploying with existing resources..."
-          
-          # Validate required inputs for existing deployment
-          if [ -z "${{ github.event.inputs.existing_ai_foundry }}" ] || \
-             [ -z "${{ github.event.inputs.existing_openai }}" ] || \
-             [ -z "${{ github.event.inputs.existing_search }}" ] || \
-             [ -z "${{ github.event.inputs.existing_storage }}" ]; then
-            echo "❌ Missing required existing resource names for existing deployment"
-            exit 1
-          fi
           
           DEPLOY_COMMAND="az deployment group create \
             --resource-group '${{ steps.vars.outputs.resource_group }}' \
@@ -287,15 +297,15 @@ jobs:
               location='${{ steps.vars.outputs.location }}' \
               environment='${{ steps.vars.outputs.environment }}' \
               userObjectId='${{ steps.vars.outputs.user_object_id }}' \
-              existingAiFoundryProjectName='${{ github.event.inputs.existing_ai_foundry }}' \
+              existingAiFoundryProjectName='${{ steps.existing.outputs.ai_foundry }}' \
               existingAiFoundryResourceGroup='${{ steps.vars.outputs.resource_group }}' \
-              existingOpenAiAccountName='${{ github.event.inputs.existing_openai }}' \
+              existingOpenAiAccountName='${{ steps.existing.outputs.openai }}' \
               existingOpenAiResourceGroup='${{ steps.vars.outputs.resource_group }}' \
-              existingSearchServiceName='${{ github.event.inputs.existing_search }}' \
+              existingSearchServiceName='${{ steps.existing.outputs.search }}' \
               existingSearchResourceGroup='${{ steps.vars.outputs.resource_group }}' \
-              existingStorageAccountName='${{ github.event.inputs.existing_storage }}' \
+              existingStorageAccountName='${{ steps.existing.outputs.storage }}' \
               existingStorageResourceGroup='${{ steps.vars.outputs.resource_group }}' \
-              existingKeyVaultName='${{ github.event.inputs.existing_keyvault }}' \
+              existingKeyVaultName='${{ steps.existing.outputs.keyvault }}' \
               existingKeyVaultResourceGroup='${{ steps.vars.outputs.resource_group }}' \
               deployNewMonitoring=true"
           
