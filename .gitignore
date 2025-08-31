@@ -136,6 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
 .envrc
 .venv
 env/
@@ -143,6 +144,14 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Environment files - never commit these
+.env.local
+.env.deployed
+.env.existing
+.env.development
+.env.staging
+.env.production
 
 # Spyder project settings
 .spyderproject

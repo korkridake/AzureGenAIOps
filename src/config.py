@@ -116,6 +116,14 @@ class LLMConfig:
 # Global configuration instance
 config = LLMConfig()
 
+# Enhanced configuration with Key Vault support
+try:
+    from src.common.keyvault_config import create_config
+    enhanced_config = create_config()
+except ImportError:
+    # Fallback to regular config if Key Vault support is not available
+    enhanced_config = config
+
 
 def validate_config() -> bool:
     """Validate that required configuration is present."""
@@ -133,3 +141,21 @@ def validate_config() -> bool:
         raise ValueError(f"Missing required environment variables: {missing_vars}")
 
     return True
+
+
+def get_config(use_key_vault: bool = None):
+    """
+    Get configuration instance with optional Key Vault support.
+    
+    Args:
+        use_key_vault: Whether to use Key Vault (auto-detected if None)
+        
+    Returns:
+        Configuration instance (enhanced if Key Vault available, regular otherwise)
+    """
+    try:
+        from src.common.keyvault_config import create_config
+        return create_config(use_key_vault=use_key_vault)
+    except ImportError:
+        # Fallback to regular config if Key Vault support is not available
+        return config

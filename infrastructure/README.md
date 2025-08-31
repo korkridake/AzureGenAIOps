@@ -209,7 +209,15 @@ The deployment creates application configuration files:
 
 ### Environment Variables
 
-After deployment, copy the generated `.env` file:
+**⚠️ Security Notice**: For production use, avoid storing secrets in `.env` files. Instead, use the [GitHub Secrets Integration Guide](../GITHUB_SECRETS_GUIDE.md) for secure secret management.
+
+After deployment, you have several options for configuration:
+
+#### Option 1: GitHub Secrets (Recommended for Production)
+Follow the [GitHub Secrets Guide](../GITHUB_SECRETS_GUIDE.md) to securely manage secrets using GitHub secrets and Azure Key Vault.
+
+#### Option 2: Local Development with .env Files
+Copy the generated `.env` file for local development:
 
 ```bash
 # For new deployment
@@ -218,6 +226,8 @@ cp .env.deployed .env
 # For existing resources
 cp .env.existing .env
 ```
+
+**Note**: Never commit `.env` files to version control.
 
 ## 🧪 Testing and Validation
 
@@ -286,6 +296,17 @@ curl -X POST "$CONTAINER_APP_URL/chat/completions" \
 - Key Vault enables soft delete and purge protection
 - All data encrypted at rest and in transit
 - Content filtering enabled for Azure OpenAI
+
+### GitHub Secrets Integration
+
+For secure CI/CD pipelines and production deployments:
+
+- **Service Principal Authentication**: Use dedicated service principals for GitHub Actions
+- **GitHub Secrets Storage**: Store sensitive values as GitHub repository secrets
+- **Key Vault Integration**: Application can retrieve secrets directly from Key Vault at runtime
+- **Zero .env Files**: Eliminate the need for environment files in production
+
+See the [GitHub Secrets Integration Guide](../GITHUB_SECRETS_GUIDE.md) for detailed setup instructions.
 
 ## 📊 Monitoring and Observability
 

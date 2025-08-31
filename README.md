@@ -155,6 +155,8 @@ Deploy via GitHub Actions with automated CI/CD:
 3. Supports dev/staging/prod environments
 4. Includes validation and security scanning
 
+For secure secret management, follow the [GitHub Secrets Integration Guide](GITHUB_SECRETS_GUIDE.md).
+
 See [Infrastructure README](infrastructure/README.md) for detailed documentation.
 
 ### 🔧 Manual Installation (Alternative)
