@@ -10,6 +10,12 @@ env:
   PYTHON_VERSION: '3.9'
   AZURE_WEBAPP_NAME: 'genai-ops-app'
   AZURE_WEBAPP_PACKAGE_PATH: '.'
+  # Azure authentication (from GitHub secrets)
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+  AZURE_KEY_VAULT_NAME: ${{ secrets.AZURE_KEY_VAULT_NAME }}
 
 jobs:
   test:
@@ -101,7 +107,40 @@ jobs:
     - name: Azure Login
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    
+    - name: Retrieve secrets from Key Vault
+      id: keyvault
+      run: |
+        echo "Retrieving secrets from Key Vault..."
+        
+        # Get Key Vault name
+        KV_NAME="${{ secrets.AZURE_KEY_VAULT_NAME }}"
+        
+        if [ -n "$KV_NAME" ]; then
+          echo "Using Key Vault: $KV_NAME"
+          
+          # Retrieve secrets and set as environment variables for this job
+          echo "AZURE_OPENAI_ENDPOINT=$(az keyvault secret show --vault-name $KV_NAME --name openai-endpoint --query value -o tsv)" >> $GITHUB_ENV
+          echo "AZURE_SEARCH_ENDPOINT=$(az keyvault secret show --vault-name $KV_NAME --name search-endpoint --query value -o tsv)" >> $GITHUB_ENV
+          
+          # Set masked environment variables for sensitive data
+          OPENAI_KEY=$(az keyvault secret show --vault-name $KV_NAME --name openai-api-key --query value -o tsv)
+          SEARCH_KEY=$(az keyvault secret show --vault-name $KV_NAME --name search-api-key --query value -o tsv)
+          
+          echo "::add-mask::$OPENAI_KEY"
+          echo "::add-mask::$SEARCH_KEY"
+          echo "AZURE_OPENAI_API_KEY=$OPENAI_KEY" >> $GITHUB_ENV
+          echo "AZURE_SEARCH_API_KEY=$SEARCH_KEY" >> $GITHUB_ENV
+          
+          echo "✅ Secrets retrieved from Key Vault"
+        else
+          echo "⚠️ No Key Vault configured, using GitHub secrets"
+          echo "AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+          echo "AZURE_SEARCH_API_KEY=${{ secrets.AZURE_SEARCH_API_KEY }}" >> $GITHUB_ENV
+        fi
     
     - name: Build and push Docker image
       run: |
@@ -120,6 +159,10 @@ jobs:
       run: |
         python scripts/deploy_ml_pipeline.py
       env:
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+        # These are now set from Key Vault in the previous step
+        AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID }}
+        AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
         AZURE_ML_WORKSPACE_NAME: ${{ secrets.AZURE_ML_WORKSPACE_NAME }}
+        # Key Vault secrets are available as environment variables
+        AZURE_OPENAI_API_KEY: ${{ env.AZURE_OPENAI_API_KEY }}
+        AZURE_SEARCH_API_KEY: ${{ env.AZURE_SEARCH_API_KEY }}
