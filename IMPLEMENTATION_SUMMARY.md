@@ -6,7 +6,16 @@ I've successfully implemented a comprehensive solution to securely manage enviro
 
 ## 📚 Key Documents Created
 
-### 1. [GITHUB_SECRETS_GUIDE.md](GITHUB_SECRETS_GUIDE.md)
+### 1. [END_TO_END_GUIDE.md](END_TO_END_GUIDE.md) ⭐ **NEW COMPREHENSIVE GUIDE**
+**Complete lifecycle guide covering:**
+- Resource setup (Greenfield & Brownfield deployments)
+- GitHub secrets integration with Azure subscription  
+- Experimentation workflows (RAG, Fine-Tuning, Prompt Management, Evaluation)
+- Unit testing and development workflows
+- CI/CD for LLM operations pipeline
+- Monitoring and observability
+
+### 2. [GITHUB_SECRETS_GUIDE.md](GITHUB_SECRETS_GUIDE.md)
 **Complete 30+ step guide covering:**
 - Service principal setup for Azure-GitHub authentication
 - GitHub secrets configuration
@@ -14,7 +23,7 @@ I've successfully implemented a comprehensive solution to securely manage enviro
 - Security best practices
 - Troubleshooting guide
 
-### 2. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+### 3. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
 **Step-by-step migration guide:**
 - Quick migration steps from .env files
 - Configuration comparison table

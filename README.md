@@ -2,6 +2,13 @@
 
 A comprehensive GenAIOps (Generative AI Operations) platform built on Azure AI Foundry, providing end-to-end LLM lifecycle management with industry best practices.
 
+## 📖 Documentation
+
+- **🎯 [END-TO-END GUIDE](END_TO_END_GUIDE.md)** - Complete setup and operations guide
+- **🔐 [GitHub Secrets Guide](GITHUB_SECRETS_GUIDE.md)** - Secure credential management  
+- **🔄 [Migration Guide](MIGRATION_GUIDE.md)** - Migrate from .env files to GitHub secrets
+- **🏗️ [Infrastructure Guide](infrastructure/README.md)** - Deployment details
+
 ## 🚀 Features
 
 ### Core LLM Operations
@@ -51,6 +58,16 @@ src/
 ```
 
 ## 🛠️ Setup
+
+### 📚 Complete Setup Guide
+
+**🎯 NEW: [END-TO-END GUIDE](END_TO_END_GUIDE.md) - Comprehensive step-by-step guide covering:**
+- 🏗️ Resource setup (Greenfield & Brownfield deployments)  
+- 🔐 GitHub secrets integration with Azure subscription
+- 🔬 Experimentation with RAG, Fine-Tuning, Prompt Management & Evaluation
+- 🧪 Unit testing and development workflows
+- 🚀 CI/CD for LLM operations pipeline
+- 📊 Monitoring and observability
 
 ### 🚀 Quick Start with Automated Deployment
 
