@@ -1,0 +1,138 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Deploy Azure GenAIOps platform with new resources - Quick Deploy version",
+    "author": "Azure GenAIOps Team"
+  },
+  "parameters": {
+    "projectName": {
+      "type": "string",
+      "defaultValue": "genaiops",
+      "minLength": 2,
+      "maxLength": 12,
+      "metadata": {
+        "description": "Name of the project"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "dev",
+      "allowedValues": [
+        "dev",
+        "staging",
+        "prod"
+      ],
+      "metadata": {
+        "description": "Environment name (dev, staging, prod)"
+      }
+    },
+    "userObjectId": {
+      "type": "string",
+      "metadata": {
+        "description": "Your Azure AD user object ID for role assignments. You can get this from: az ad signed-in-user show --query id -o tsv"
+      }
+    }
+  },
+  "variables": {
+    "suffix": "[uniqueString(resourceGroup().id)]",
+    "uniqueName": "[concat(parameters('projectName'), parameters('environment'), variables('suffix'))]",
+    "deploymentScriptName": "[concat('ds-', variables('uniqueName'))]",
+    "userAssignedIdentityName": "[concat('id-', variables('uniqueName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2023-01-31",
+      "name": "[variables('userAssignedIdentityName')]",
+      "location": "[parameters('location')]",
+      "metadata": {
+        "description": "User-assigned managed identity for deployment script"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, 'contributor')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))).principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "metadata": {
+        "description": "Assign Contributor role to managed identity"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2023-08-01",
+      "name": "[variables('deploymentScriptName')]",
+      "location": "[parameters('location')]",
+      "kind": "AzureCLI",
+      "dependsOn": [
+        "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, 'contributor'))]"
+      ],
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userAssignedIdentityName'))]": {}
+        }
+      },
+      "properties": {
+        "azCliVersion": "2.50.0",
+        "timeout": "PT30M",
+        "retentionInterval": "P1D",
+        "environmentVariables": [
+          {
+            "name": "PROJECT_NAME",
+            "value": "[parameters('projectName')]"
+          },
+          {
+            "name": "LOCATION",
+            "value": "[parameters('location')]"
+          },
+          {
+            "name": "ENVIRONMENT",
+            "value": "[parameters('environment')]"
+          },
+          {
+            "name": "USER_OBJECT_ID",
+            "value": "[parameters('userObjectId')]"
+          },
+          {
+            "name": "RESOURCE_GROUP",
+            "value": "[resourceGroup().name]"
+          }
+        ],
+        "scriptContent": "#!/bin/bash\nset -e\n\necho \"Starting Azure GenAIOps deployment...\"\necho \"Project: $PROJECT_NAME\"\necho \"Environment: $ENVIRONMENT\"\necho \"Location: $LOCATION\"\necho \"Resource Group: $RESOURCE_GROUP\"\n\n# Install Bicep\necho \"Installing Bicep...\"\naz bicep install\n\n# Clone the repository\necho \"Cloning repository...\"\ngit clone https://github.com/korkridake/AzureGenAIOps.git /tmp/AzureGenAIOps\ncd /tmp/AzureGenAIOps\n\n# Deploy using Bicep\necho \"Deploying infrastructure...\"\naz deployment group create \\\n  --resource-group \"$RESOURCE_GROUP\" \\\n  --template-file infrastructure/bicep/main.bicep \\\n  --parameters \\\n    projectName=\"$PROJECT_NAME\" \\\n    location=\"$LOCATION\" \\\n    environment=\"$ENVIRONMENT\" \\\n    userObjectId=\"$USER_OBJECT_ID\"\n\n# Get deployment outputs\necho \"Getting deployment outputs...\"\nDEPLOYMENT_NAME=$(az deployment group list --resource-group \"$RESOURCE_GROUP\" --query \"[0].name\" -o tsv)\nOUTPUTS=$(az deployment group show --name \"$DEPLOYMENT_NAME\" --resource-group \"$RESOURCE_GROUP\" --query properties.outputs)\n\necho \"Deployment completed successfully!\"\necho \"Outputs: $OUTPUTS\"\n\n# Create outputs for the deployment script\necho '{\"outputs\": '\"$OUTPUTS\"'}' > $AZ_SCRIPTS_OUTPUT_PATH\n"
+      },
+      "metadata": {
+        "description": "Deployment script to deploy the full GenAIOps platform using Bicep"
+      }
+    }
+  ],
+  "outputs": {
+    "deploymentResult": {
+      "type": "object",
+      "value": "[reference(variables('deploymentScriptName')).outputs]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[resourceGroup().name]"
+    },
+    "deploymentName": {
+      "type": "string",
+      "value": "[variables('deploymentScriptName')]"
+    }
+  }
+}
